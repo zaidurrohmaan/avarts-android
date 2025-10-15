@@ -32,6 +32,7 @@ class LocationService : Service() {
         locationCallback = object : LocationCallback() {
             override fun onLocationResult(locationResult: LocationResult) {
                 locationResult.locations.forEach { location ->
+                    LocationRepository.addLocation(location)
                     val trackPoint = TrackPoint(
                         lat = location.latitude,
                         lon = location.longitude,
@@ -75,17 +76,24 @@ class LocationService : Service() {
     private fun createNotification(): Notification {
         val channelId = "location_service_channel"
         val channelName = "Location Service Channel"
-        val channel = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_DEFAULT)
-        } else {
-            TODO("VERSION.SDK_INT < O")
-        }
-        val manager = getSystemService(NotificationManager::class.java)
-        manager.createNotificationChannel(channel)
+        val notificationManager = getSystemService(NotificationManager::class.java)
 
-        return Notification.Builder(this, channelId)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_DEFAULT)
+            notificationManager.createNotificationChannel(channel)
+        }
+
+        val notificationBuilder = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            Notification.Builder(this, channelId)
+        } else {
+            @Suppress("DEPRECATION")
+            Notification.Builder(this)
+        }
+
+        return notificationBuilder
             .setContentTitle("Avarts")
             .setContentText("Recording your activity")
+            .setSmallIcon(R.mipmap.ic_launcher)
             .build()
     }
 }
