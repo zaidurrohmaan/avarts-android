@@ -1,8 +1,9 @@
-package com.zaidu.avarts
+package com.zaidu.avarts.data.database
 
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
+import com.zaidu.avarts.data.database.entities.TrackPoint
 
 @Dao
 interface TrackPointDao {

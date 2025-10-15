@@ -1,4 +1,4 @@
-package com.zaidu.avarts
+package com.zaidu.avarts.data.repository
 
 import android.location.Location
 import kotlinx.coroutines.flow.MutableStateFlow

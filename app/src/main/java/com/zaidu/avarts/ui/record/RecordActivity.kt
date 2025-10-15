@@ -1,4 +1,4 @@
-package com.zaidu.avarts
+package com.zaidu.avarts.ui.record
 
 import android.Manifest
 import android.app.Application
@@ -27,6 +27,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
+import com.zaidu.avarts.ui.record.RecordViewModelFactory
 import com.zaidu.avarts.ui.theme.AvartsTheme
 import java.util.concurrent.TimeUnit
 

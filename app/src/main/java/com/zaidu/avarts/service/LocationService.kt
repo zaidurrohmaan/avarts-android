@@ -1,4 +1,4 @@
-package com.zaidu.avarts
+package com.zaidu.avarts.service
 
 import android.annotation.SuppressLint
 import android.app.Notification
@@ -9,7 +9,16 @@ import android.content.Intent
 import android.os.Build
 import android.os.IBinder
 import android.os.Looper
-import com.google.android.gms.location.*
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationCallback
+import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationResult
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.Priority
+import com.zaidu.avarts.R
+import com.zaidu.avarts.data.database.AppDatabase
+import com.zaidu.avarts.data.database.entities.TrackPoint
+import com.zaidu.avarts.data.repository.LocationRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -27,7 +36,7 @@ class LocationService : Service() {
     override fun onCreate() {
         super.onCreate()
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
-        db = AppDatabase.getDatabase(this)
+        db = AppDatabase.Companion.getDatabase(this)
 
         locationCallback = object : LocationCallback() {
             override fun onLocationResult(locationResult: LocationResult) {
@@ -76,10 +85,11 @@ class LocationService : Service() {
     private fun createNotification(): Notification {
         val channelId = "location_service_channel"
         val channelName = "Location Service Channel"
-        val notificationManager = getSystemService(NotificationManager::class.java)
+        val notificationManager = this.getSystemService(NotificationManager::class.java)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_DEFAULT)
+            val channel =
+                NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_DEFAULT)
             notificationManager.createNotificationChannel(channel)
         }
 

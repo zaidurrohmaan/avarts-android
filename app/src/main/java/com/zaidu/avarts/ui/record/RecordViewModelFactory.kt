@@ -1,4 +1,4 @@
-package com.zaidu.avarts
+package com.zaidu.avarts.ui.record
 
 import android.app.Application
 import androidx.lifecycle.ViewModel

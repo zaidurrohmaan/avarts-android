@@ -1,4 +1,4 @@
-package com.zaidu.avarts
+package com.zaidu.avarts.ui.record
 
 import android.app.Application
 import android.content.Context
@@ -8,12 +8,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.zaidu.avarts.service.LocationService
+import com.zaidu.avarts.data.database.AppDatabase
+import com.zaidu.avarts.data.repository.LocationRepository
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
-import java.util.concurrent.TimeUnit
 
 enum class RecordingState {
     STOPPED,
