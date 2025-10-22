@@ -74,16 +74,25 @@ class SaveViewModel(application: Application) : AndroidViewModel(application) {
         for (i in 0 until trackPoints.size - 1) {
             val start = trackPoints[i]
             val end = trackPoints[i + 1]
-            val results = FloatArray(1)
-            Location.distanceBetween(start.lat, start.lon, end.lat, end.lon, results)
-            totalDistance += results[0]
+            if (!start.isPaused && !end.isPaused) {
+                val results = FloatArray(1)
+                Location.distanceBetween(start.lat, start.lon, end.lat, end.lon, results)
+                totalDistance += results[0]
+            }
         }
         return totalDistance
     }
 
     private fun calculateMovingTime(): Long {
-        if (trackPoints.isEmpty()) return 0
-        return (trackPoints.last().time - trackPoints.first().time) / 1000
+        var movingTime = 0L
+        for (i in 0 until trackPoints.size - 1) {
+            val start = trackPoints[i]
+            val end = trackPoints[i + 1]
+            if (!start.isPaused) {
+                movingTime += (end.time - start.time)
+            }
+        }
+        return movingTime / 1000
     }
 
     private fun calculateElapsedTime(): Long {

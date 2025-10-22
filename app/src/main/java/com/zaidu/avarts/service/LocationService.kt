@@ -9,12 +9,7 @@ import android.content.Intent
 import android.os.Build
 import android.os.IBinder
 import android.os.Looper
-import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationCallback
-import com.google.android.gms.location.LocationRequest
-import com.google.android.gms.location.LocationResult
-import com.google.android.gms.location.LocationServices
-import com.google.android.gms.location.Priority
+import com.google.android.gms.location.*
 import com.zaidu.avarts.R
 import com.zaidu.avarts.data.database.AppDatabase
 import com.zaidu.avarts.data.database.entities.TrackPoint
@@ -28,6 +23,7 @@ class LocationService : Service() {
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var locationCallback: LocationCallback
     private lateinit var db: AppDatabase
+    private var isPaused = false
 
     override fun onBind(intent: Intent?): IBinder? {
         return null
@@ -36,17 +32,20 @@ class LocationService : Service() {
     override fun onCreate() {
         super.onCreate()
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
-        db = AppDatabase.Companion.getDatabase(this)
+        db = AppDatabase.getDatabase(this)
 
         locationCallback = object : LocationCallback() {
             override fun onLocationResult(locationResult: LocationResult) {
                 locationResult.locations.forEach { location ->
-                    LocationRepository.addLocation(location)
+                    if (!isPaused) {
+                        LocationRepository.addLocation(location)
+                    }
                     val trackPoint = TrackPoint(
                         lat = location.latitude,
                         lon = location.longitude,
                         time = System.currentTimeMillis(),
-                        altitude = location.altitude
+                        altitude = location.altitude,
+                        isPaused = isPaused
                     )
                     CoroutineScope(Dispatchers.IO).launch {
                         db.trackPointDao().insert(trackPoint)
@@ -57,8 +56,21 @@ class LocationService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        startForeground(1, createNotification())
-        startLocationUpdates()
+        when (intent?.action) {
+            ACTION_START -> {
+                startForeground(1, createNotification())
+                startLocationUpdates()
+            }
+            ACTION_PAUSE -> {
+                isPaused = true
+            }
+            ACTION_RESUME -> {
+                isPaused = false
+            }
+            ACTION_STOP -> {
+                stopSelf()
+            }
+        }
         return START_STICKY
     }
 
@@ -85,11 +97,10 @@ class LocationService : Service() {
     private fun createNotification(): Notification {
         val channelId = "location_service_channel"
         val channelName = "Location Service Channel"
-        val notificationManager = this.getSystemService(NotificationManager::class.java)
+        val notificationManager = getSystemService(NotificationManager::class.java)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel =
-                NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_DEFAULT)
+            val channel = NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_DEFAULT)
             notificationManager.createNotificationChannel(channel)
         }
 
@@ -105,5 +116,12 @@ class LocationService : Service() {
             .setContentText("Recording your activity")
             .setSmallIcon(R.mipmap.ic_launcher)
             .build()
+    }
+
+    companion object {
+        const val ACTION_START = "ACTION_START"
+        const val ACTION_PAUSE = "ACTION_PAUSE"
+        const val ACTION_RESUME = "ACTION_RESUME"
+        const val ACTION_STOP = "ACTION_STOP"
     }
 }

@@ -10,5 +10,6 @@ data class TrackPoint(
     val lat: Double,
     val lon: Double,
     val time: Long,
-    val altitude: Double
+    val altitude: Double,
+    val isPaused: Boolean = false
 )

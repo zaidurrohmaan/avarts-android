@@ -55,7 +55,7 @@ class RecordViewModel(application: Application) : AndroidViewModel(application) 
         reset()
 
         if (hasPermission) {
-            val intent = Intent(context, LocationService::class.java)
+            val intent = Intent(context, LocationService::class.java).apply { action = LocationService.ACTION_START }
             context.startService(intent)
             recordingState = RecordingState.RECORDING
             startTimer()
@@ -65,22 +65,20 @@ class RecordViewModel(application: Application) : AndroidViewModel(application) 
     }
 
     fun onPauseClick(context: Context) {
-        val intent = Intent(context, LocationService::class.java)
-        context.stopService(intent)
+        val intent = Intent(context, LocationService::class.java).apply { action = LocationService.ACTION_PAUSE }
+        context.startService(intent)
         recordingState = RecordingState.PAUSED
-        stopTimer()
     }
 
     fun onResumeClick(context: Context) {
-        val intent = Intent(context, LocationService::class.java)
+        val intent = Intent(context, LocationService::class.java).apply { action = LocationService.ACTION_RESUME }
         context.startService(intent)
         recordingState = RecordingState.RECORDING
-        startTimer()
     }
 
     fun onFinishClick(context: Context) {
-        val intent = Intent(context, LocationService::class.java)
-        context.stopService(intent)
+        val intent = Intent(context, LocationService::class.java).apply { action = LocationService.ACTION_STOP }
+        context.startService(intent)
         recordingState = RecordingState.STOPPED
         stopTimer()
 
@@ -92,8 +90,10 @@ class RecordViewModel(application: Application) : AndroidViewModel(application) 
         timerJob = viewModelScope.launch {
             while (true) {
                 delay(1000)
-                movingTime += 1
-                elapsedTime +=1
+                elapsedTime += 1
+                if (recordingState == RecordingState.RECORDING) {
+                    movingTime += 1
+                }
             }
         }
     }
