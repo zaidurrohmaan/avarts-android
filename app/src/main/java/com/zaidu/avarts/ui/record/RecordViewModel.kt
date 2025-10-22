@@ -8,9 +8,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.zaidu.avarts.service.LocationService
 import com.zaidu.avarts.data.database.AppDatabase
 import com.zaidu.avarts.data.repository.LocationRepository
+import com.zaidu.avarts.service.LocationService
+import com.zaidu.avarts.ui.save.SaveActivity
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.launchIn
@@ -30,6 +31,7 @@ class RecordViewModel(application: Application) : AndroidViewModel(application) 
     var hasPermission by mutableStateOf(false)
 
     var movingTime by mutableStateOf(0L)
+    var elapsedTime by mutableStateOf(0L)
     var distance by mutableStateOf(0.0f)
     var splitPace by mutableStateOf(0.0f)
     var averagePace by mutableStateOf(0.0f)
@@ -81,7 +83,9 @@ class RecordViewModel(application: Application) : AndroidViewModel(application) 
         context.stopService(intent)
         recordingState = RecordingState.STOPPED
         stopTimer()
-        // TODO: navigate to save screen
+
+        val saveIntent = Intent(context, SaveActivity::class.java)
+        context.startActivity(saveIntent)
     }
 
     private fun startTimer() {
@@ -89,6 +93,7 @@ class RecordViewModel(application: Application) : AndroidViewModel(application) 
             while (true) {
                 delay(1000)
                 movingTime += 1
+                elapsedTime +=1
             }
         }
     }
@@ -113,6 +118,7 @@ class RecordViewModel(application: Application) : AndroidViewModel(application) 
     private fun reset() {
         LocationRepository.reset()
         movingTime = 0L
+        elapsedTime = 0L
         distance = 0.0f
         splitPace = 0.0f
         averagePace = 0.0f

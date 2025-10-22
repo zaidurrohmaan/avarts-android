@@ -8,6 +8,8 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -15,18 +17,27 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
+import com.zaidu.avarts.R
 import com.zaidu.avarts.ui.record.RecordViewModelFactory
 import com.zaidu.avarts.ui.theme.AvartsTheme
 import java.util.concurrent.TimeUnit
@@ -101,32 +112,70 @@ fun RecordScreen(viewModel: RecordViewModel) {
 
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceEvenly
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
         ) {
             when (viewModel.recordingState) {
                 RecordingState.STOPPED -> {
-                    Button(onClick = { viewModel.onStartClick(context) }) {
-                        Text(text = "Start")
-                    }
-                    Button(onClick = { /* TODO: Go to List Activity */ }) {
-                        Text(text = "List")
-                    }
+                    CircularButton(
+                        icon = R.drawable.ic_run,
+                        size = 64.dp,
+                        onClick = {  }
+                    )
+                    Spacer(modifier = Modifier.size(24.dp))
+                    CircularButton(
+                        icon = R.drawable.ic_play,
+                        onClick = { viewModel.onStartClick(context) }
+                    )
+                    Spacer(modifier = Modifier.size(24.dp))
+                    CircularButton(
+                        icon = R.drawable.ic_list,
+                        size = 64.dp,
+                        onClick = {  }
+                    )
                 }
                 RecordingState.RECORDING -> {
-                    Button(onClick = { viewModel.onPauseClick(context) }) {
-                        Text(text = "Pause")
-                    }
+                    CircularButton(
+                        icon = R.drawable.ic_pause,
+                        onClick = { viewModel.onPauseClick(context) }
+                    )
                 }
                 RecordingState.PAUSED -> {
-                    Button(onClick = { viewModel.onResumeClick(context) }) {
-                        Text(text = "Resume")
-                    }
-                    Button(onClick = { viewModel.onFinishClick(context) }) {
-                        Text(text = "Finish")
-                    }
+                    CircularButton(
+                        icon = R.drawable.ic_resume,
+                        onClick = { viewModel.onResumeClick(context) }
+                    )
+                    Spacer(modifier = Modifier.size(24.dp))
+                    CircularButton(
+                        icon = R.drawable.ic_finish,
+                        onClick = { viewModel.onFinishClick(context) }
+                    )
                 }
             }
         }
+    }
+}
+
+@Composable
+fun CircularButton(icon: Int, size: Dp = 100.dp, onClick: () -> Unit) {
+    Button(
+        onClick = onClick,
+        modifier = Modifier
+            .size(size)
+            .border(1.dp, Color.Gray, CircleShape),
+        shape = CircleShape,
+        colors = ButtonDefaults.buttonColors(
+            containerColor = Color.White,
+            contentColor = Color.Black
+        ),
+        elevation = ButtonDefaults.buttonElevation(0.dp),
+
+        ) {
+        Image(
+            painter = painterResource(id = icon),
+            contentDescription = null,
+            modifier = Modifier.size(48.dp)
+        )
     }
 }
 
