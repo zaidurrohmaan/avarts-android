@@ -10,6 +10,9 @@ class Converters {
 
     @TypeConverter
     fun toFloatList(value: String): List<Float> {
+        if (value.isEmpty()) {
+            return emptyList()
+        }
         return value.split(",").map { it.toFloat() }
     }
 }

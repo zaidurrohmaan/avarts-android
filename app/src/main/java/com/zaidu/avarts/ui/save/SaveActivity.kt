@@ -16,6 +16,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.zaidu.avarts.ui.theme.AvartsTheme
@@ -28,7 +29,9 @@ class SaveActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             AvartsTheme {
-                SaveScreen(viewModel)
+                SaveScreen(viewModel) {
+                    finish()
+                }
             }
         }
     }
@@ -36,7 +39,12 @@ class SaveActivity : ComponentActivity() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SaveScreen(viewModel: SaveViewModel) {
+fun SaveScreen(viewModel: SaveViewModel, onFinish: () -> Unit) {
+    val isFinished = viewModel.isFinished.collectAsState()
+    if (isFinished.value) {
+        onFinish()
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()

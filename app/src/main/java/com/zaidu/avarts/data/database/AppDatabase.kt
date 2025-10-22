@@ -8,7 +8,7 @@ import androidx.room.TypeConverters
 import com.zaidu.avarts.data.database.entities.ActivitySummary
 import com.zaidu.avarts.data.database.entities.TrackPoint
 
-@Database(entities = [TrackPoint::class, ActivitySummary::class], version = 3)
+@Database(entities = [TrackPoint::class, ActivitySummary::class], version = 4)
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun trackPointDao(): TrackPointDao

@@ -2,14 +2,13 @@ package com.zaidu.avarts.ui.record
 
 import android.Manifest
 import android.app.Application
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -17,28 +16,22 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
-import com.zaidu.avarts.R
-import com.zaidu.avarts.ui.record.RecordViewModelFactory
+import com.zaidu.avarts.ui.list.ListActivity
+import com.zaidu.avarts.ui.save.SaveActivity
 import com.zaidu.avarts.ui.theme.AvartsTheme
 import java.util.concurrent.TimeUnit
 
@@ -52,6 +45,12 @@ class RecordActivity : ComponentActivity() {
         ActivityResultContracts.RequestPermission()
     ) { isGranted: Boolean ->
         viewModel.hasPermission = isGranted
+    }
+
+    private val saveActivityLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { _ ->
+        viewModel.onSaveActivityFinished()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -75,7 +74,10 @@ class RecordActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    RecordScreen(viewModel)
+                    RecordScreen(viewModel) {
+                        val intent = Intent(this, SaveActivity::class.java)
+                        saveActivityLauncher.launch(intent)
+                    }
                 }
             }
         }
@@ -83,8 +85,16 @@ class RecordActivity : ComponentActivity() {
 }
 
 @Composable
-fun RecordScreen(viewModel: RecordViewModel) {
+fun RecordScreen(viewModel: RecordViewModel, onNavigateToSave: () -> Unit) {
     val context = LocalContext.current
+    val navigateToSave = viewModel.navigateToSaveActivity.collectAsState()
+
+    if (navigateToSave.value) {
+        LaunchedEffect(Unit) {
+            onNavigateToSave()
+        }
+    }
+
     Column(
         modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -112,70 +122,32 @@ fun RecordScreen(viewModel: RecordViewModel) {
 
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
+            horizontalArrangement = Arrangement.SpaceEvenly
         ) {
             when (viewModel.recordingState) {
                 RecordingState.STOPPED -> {
-                    CircularButton(
-                        icon = R.drawable.ic_run,
-                        size = 64.dp,
-                        onClick = {  }
-                    )
-                    Spacer(modifier = Modifier.size(24.dp))
-                    CircularButton(
-                        icon = R.drawable.ic_play,
-                        onClick = { viewModel.onStartClick(context) }
-                    )
-                    Spacer(modifier = Modifier.size(24.dp))
-                    CircularButton(
-                        icon = R.drawable.ic_list,
-                        size = 64.dp,
-                        onClick = {  }
-                    )
+                    Button(onClick = { viewModel.onStartClick(context) }) {
+                        Text(text = "Start")
+                    }
+                    Button(onClick = { context.startActivity(Intent(context, ListActivity::class.java)) }) {
+                        Text(text = "List")
+                    }
                 }
                 RecordingState.RECORDING -> {
-                    CircularButton(
-                        icon = R.drawable.ic_pause,
-                        onClick = { viewModel.onPauseClick(context) }
-                    )
+                    Button(onClick = { viewModel.onPauseClick(context) }) {
+                        Text(text = "Pause")
+                    }
                 }
                 RecordingState.PAUSED -> {
-                    CircularButton(
-                        icon = R.drawable.ic_resume,
-                        onClick = { viewModel.onResumeClick(context) }
-                    )
-                    Spacer(modifier = Modifier.size(24.dp))
-                    CircularButton(
-                        icon = R.drawable.ic_finish,
-                        onClick = { viewModel.onFinishClick(context) }
-                    )
+                    Button(onClick = { viewModel.onResumeClick(context) }) {
+                        Text(text = "Resume")
+                    }
+                    Button(onClick = { viewModel.onFinishClick(context) }) {
+                        Text(text = "Finish")
+                    }
                 }
             }
         }
-    }
-}
-
-@Composable
-fun CircularButton(icon: Int, size: Dp = 100.dp, onClick: () -> Unit) {
-    Button(
-        onClick = onClick,
-        modifier = Modifier
-            .size(size)
-            .border(1.dp, Color.Gray, CircleShape),
-        shape = CircleShape,
-        colors = ButtonDefaults.buttonColors(
-            containerColor = Color.White,
-            contentColor = Color.Black
-        ),
-        elevation = ButtonDefaults.buttonElevation(0.dp),
-
-        ) {
-        Image(
-            painter = painterResource(id = icon),
-            contentDescription = null,
-            modifier = Modifier.size(48.dp)
-        )
     }
 }
 
@@ -198,7 +170,7 @@ private fun formatPace(pace: Float): String {
 fun DefaultPreview() {
     AvartsTheme {
         val application = LocalContext.current.applicationContext as Application
-        RecordScreen(RecordViewModel(application))
+        RecordScreen(RecordViewModel(application)) {}
     }
 }
 
@@ -209,7 +181,7 @@ fun RecordingPreview() {
     val viewModel = RecordViewModel(application)
     viewModel.onStartClick(LocalContext.current)
     AvartsTheme {
-        RecordScreen(viewModel)
+        RecordScreen(viewModel) {}
     }
 }
 
@@ -221,6 +193,6 @@ fun PausedPreview() {
     viewModel.onStartClick(LocalContext.current)
     viewModel.onPauseClick(LocalContext.current)
     AvartsTheme {
-        RecordScreen(viewModel)
+        RecordScreen(viewModel) {}
     }
 }

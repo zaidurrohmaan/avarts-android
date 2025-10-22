@@ -11,9 +11,10 @@ import androidx.lifecycle.viewModelScope
 import com.zaidu.avarts.data.database.AppDatabase
 import com.zaidu.avarts.data.repository.LocationRepository
 import com.zaidu.avarts.service.LocationService
-import com.zaidu.avarts.ui.save.SaveActivity
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -35,6 +36,9 @@ class RecordViewModel(application: Application) : AndroidViewModel(application) 
     var distance by mutableStateOf(0.0f)
     var splitPace by mutableStateOf(0.0f)
     var averagePace by mutableStateOf(0.0f)
+
+    private val _navigateToSaveActivity = MutableStateFlow(false)
+    val navigateToSaveActivity = _navigateToSaveActivity.asStateFlow()
 
     private val db = AppDatabase.getDatabase(application)
     private var timerJob: Job? = null
@@ -81,9 +85,12 @@ class RecordViewModel(application: Application) : AndroidViewModel(application) 
         context.startService(intent)
         recordingState = RecordingState.STOPPED
         stopTimer()
+        _navigateToSaveActivity.value = true
+    }
 
-        val saveIntent = Intent(context, SaveActivity::class.java)
-        context.startActivity(saveIntent)
+    fun onSaveActivityFinished() {
+        reset()
+        _navigateToSaveActivity.value = false
     }
 
     private fun startTimer() {

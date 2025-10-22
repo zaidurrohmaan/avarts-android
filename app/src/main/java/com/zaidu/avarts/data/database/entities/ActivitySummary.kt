@@ -17,5 +17,6 @@ data class ActivitySummary(
     val movingTime: Long,
     val elapsedTime: Long,
     val elevationGain: Double,
-    val splitPace: List<Float>
+    val splitPace: List<Float>,
+    val gpxFilePath: String
 )
